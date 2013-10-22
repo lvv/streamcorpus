@@ -4,6 +4,7 @@ add_definitions(-DHAVE_NETINET_IN_H)
 add_definitions(-DHAVE_INTTYPES_H)
 
 find_path(THRIFT_INCLUDE_DIR protocol/TBinaryProtocol.h
+    /usr/include/thrift
     /opt/local/include
     /usr/local/include
     /usr/include

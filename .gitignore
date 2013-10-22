@@ -42,3 +42,5 @@ CMakeFiles/
 Makefile
 cmake_install.cmake
 cpp/libstreamcorpus.a
+annotated.sc
+examples/cpp/annotation_example

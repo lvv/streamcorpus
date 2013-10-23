@@ -1,0 +1,7 @@
+#!/bin/bash
+# vim:set ts=4 sw=4 syntax=sh:   
+
+thrift_name=if/streamcorpus-v0_3_0.thrift
+cp $thrift_name                /tmp/streamcorpus.thrift
+thrift  --out cpp --gen cpp    /tmp/streamcorpus.thrift
+

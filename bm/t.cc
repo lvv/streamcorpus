@@ -105,13 +105,13 @@ int main(int argc, char **argv) {
 	fn::FilterNames filter_names;
 	filter_names.read(protocolScf.get());
 
-					// check data
+					/*// check data
 					for(const auto& pr : filter_names.target_id_to_names) {
 						clog << pr.first << endl;
 						for(auto& name : pr.second) {
 							clog << '\t' << name << endl;
 						}
-					}
+					}*/
 	
 	// Setup thrift reading and writing from stdin and stdout
 	int input_fd = 0;
@@ -163,7 +163,24 @@ int main(int argc, char **argv) {
 	                exit(-1);
 	            }
 	        }
+
+		
 	     
+// NAIVE SEARCH ############################################################################################################
+
+		filter_names.name_to_target_ids["John Smith"] = vector<string>();
+
+		for(const auto& pr : filter_names.name_to_target_ids) {
+			const auto& name = pr.first;
+			//clog << name << "\n";
+                        auto pos = std::search(content.begin(), content.end(),  name.begin(), name.end());
+			if (pos == content.end()) continue;
+
+			// found
+			clog << cnt << "  doc id: " << stream_item.doc_id;
+			clog << "\t" << name << "  (" << pos-content.begin() << ")\n";
+		}
+// BOOST SEARCH ############################################################################################################
 	        // search content 
 	        boost::regex rgx("John.{0,5}Smith", boost::regex_constants::icase);
 	        boost::smatch m;

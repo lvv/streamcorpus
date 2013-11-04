@@ -14,8 +14,16 @@
 #include <boost/regex.hpp>
 #include <fstream>
 
+// THRIFT -- STREAMCORUPS
 #include "streamcorpus_types.h"
 #include "streamcorpus_constants.h"
+using namespace streamcorpus;
+
+// THRIFT -- SCF READER
+#include "filternames_types.h"
+#include "filternames_constants.h"
+//using namespace filternames;
+namespace fn = filternames;
 
 #include <protocol/TBinaryProtocol.h>
 #include <protocol/TDenseProtocol.h>
@@ -37,7 +45,6 @@ using namespace apache::thrift::transport;
 
 namespace po = boost::program_options;
 
-using namespace streamcorpus;
 
 int main(int argc, char **argv) {
 	
@@ -84,8 +91,9 @@ int main(int argc, char **argv) {
 	// read FilterNames
 	#define SCF "test-name-strings.scf"
 	int scf_fh = open(SCF, O_RDONLY);
+
 					if(scf_fh==-1)  {
-						cerr << "error: can not open scf file -- '" << SCF << "'\n";
+						cerr << "error: cann't open scf file -- '" << SCF << "'\n";
 						exit(1);
 					}
 
@@ -93,6 +101,9 @@ int main(int argc, char **argv) {
 	boost::shared_ptr<TBufferedTransport> transportScf(new TBufferedTransport(innerTransportScf));
 	boost::shared_ptr<TBinaryProtocol> protocolScf(new TBinaryProtocol(transportScf));
 	transportScf->open();
+	
+	fn::FilterNames filter_names;
+	filter_names.read(protocolScf.get());
 	
 	// Setup thrift reading and writing from stdin and stdout
 	int input_fd = 0;
@@ -103,7 +114,7 @@ int main(int argc, char **argv) {
 	boost::shared_ptr<TBufferedTransport> transportInput(new TBufferedTransport(innerTransportInput));
 	boost::shared_ptr<TBinaryProtocol> protocolInput(new TBinaryProtocol(transportInput));
 	transportInput->open();
-	
+
 	// output 
 	boost::shared_ptr<TFDTransport> transportOutput(new TFDTransport(output_fd));
 	boost::shared_ptr<TBinaryProtocol> protocolOutput(new TBinaryProtocol(transportOutput));

@@ -26,12 +26,21 @@ message(STATUS "Include file detected: [${THRIFT_INCLUDE_DIR}].")
 include_directories(${THRIFT_INCLUDE_DIR})
 
 
-###  STREAMCORPUS
+###  THRIFT STREAMCORPUS
 set			(SC  /tr/sc-lvv-v0.3.0-dev/cpp)
 include_directories	(${SC})
 link_directories	(${SC})
 
+###  THRIFT STREAMCORPUS-FILTER
+include_directories	(build)
+add_library(
+	filternames
+	filternames_constants.cpp 
+	filternames_constants.h
+	filternames_types.cpp 
+	filternames_types.h
+)
 
 ###  TARGET
 add_executable(t t.cc)
-target_link_libraries(t  ${Boost_LIBRARIES} ${THRIFT_LIB} streamcorpus)
+target_link_libraries(t  ${Boost_LIBRARIES} ${THRIFT_LIB} streamcorpus filternames)

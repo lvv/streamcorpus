@@ -19,7 +19,7 @@
 #include "streamcorpus_constants.h"
 using namespace streamcorpus;
 
-// THRIFT -- SCF READER
+// THRIFT -- FILTERNAMES
 #include "filternames_types.h"
 #include "filternames_constants.h"
 //using namespace filternames;
@@ -104,6 +104,14 @@ int main(int argc, char **argv) {
 	
 	fn::FilterNames filter_names;
 	filter_names.read(protocolScf.get());
+
+					// check data
+					for(const auto& pr : filter_names.target_id_to_names) {
+						clog << pr.first << endl;
+						for(auto& name : pr.second) {
+							clog << '\t' << name << endl;
+						}
+					}
 	
 	// Setup thrift reading and writing from stdin and stdout
 	int input_fd = 0;

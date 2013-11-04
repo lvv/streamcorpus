@@ -1,0 +1,37 @@
+#
+SET (CMAKE_BUILD_TYPE Debug)
+SET (CMAKE_VERBOSE_MAKEFILE on)
+
+cmake_minimum_required(VERSION 2.6.4)
+add_definitions(-DHAVE_NETINET_IN_H)
+add_definitions(-DHAVE_INTTYPES_H)
+
+set(CMAKE_CXX_FLAGS "-std=c++0x")
+
+###  BOOST
+find_package( Boost REQUIRED COMPONENTS filesystem program_options system regex)
+include_directories(${Boost_INCLUDE_DIR})
+
+###  THIFT
+find_library( THRIFT_LIB thrift )
+find_path(
+	THRIFT_INCLUDE_DIR protocol/TBinaryProtocol.h
+	/usr/include/thrift
+	/opt/local/include
+	/usr/local/include
+	/usr/include
+	/usr/local/include/thrift
+)
+message(STATUS "Include file detected: [${THRIFT_INCLUDE_DIR}].")
+include_directories(${THRIFT_INCLUDE_DIR})
+
+
+###  STREAMCORPUS
+set			(SC  /tr/sc-lvv-v0.3.0-dev/cpp)
+include_directories	(${SC})
+link_directories	(${SC})
+
+
+###  TARGET
+add_executable(t t.cc)
+target_link_libraries(t  ${Boost_LIBRARIES} ${THRIFT_LIB} streamcorpus)

@@ -39,8 +39,15 @@ nosetests.xml
 py/RELEASE-VERSION
 CMakeCache.txt
 CMakeFiles/
-Makefile
 cmake_install.cmake
 cpp/libstreamcorpus.a
 annotated.sc
 examples/cpp/annotation_example
+cpp/Makefile
+examples/cpp/Makefile
+
+# benchmark
+bm/t
+bm/build
+
+

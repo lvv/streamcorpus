@@ -51,6 +51,7 @@ int main(int argc, char **argv) {
 	clog << "Starting program" <<endl;
 	
 	string text_source("clean_visible");
+	string filtername_path;
 	
 	bool negate(false);
 	
@@ -61,6 +62,7 @@ int main(int argc, char **argv) {
 		("help,h", "help message")
 		("text_source,t", po::value<string>(&text_source), "text source in stream item")
 		("negate,n", po::value<bool>(&negate)->implicit_value(true), "negate sense of match")
+		("filtername,f", po::value<string>(&filtername_path), "filtername file")
 	;
 	
 	// Parse command line options
@@ -90,11 +92,10 @@ int main(int argc, char **argv) {
 	annotator.__set_annotation_time(streamtime);
 
 	// read FilterNames
-	#define SCF "test-name-strings.scf"
-	int scf_fh = open(SCF, O_RDONLY);
+	int scf_fh = open(filtername_path.c_str(), O_RDONLY);
 
 					if(scf_fh==-1)  {
-						cerr << "error: cann't open scf file -- '" << SCF << "'\n";
+						cerr << "error: cann't open scf file -- '" << filtername_path << "'\n";
 						exit(1);
 					}
 

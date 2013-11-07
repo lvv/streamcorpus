@@ -1,4 +1,7 @@
 filtername="test-name-strings.scf"
+corpus=../test-data/john-smith-tagged-by-lingpipe-0-v0_2_0.sc
+output=/tmp/filtered.sc
+
 thrift_generated= \
 	build/filternames_constants.cpp  \
 	build/filternames_constants.h  \
@@ -8,12 +11,12 @@ thrift_generated= \
 ##########################################################
 
 run:	filter
-	cat ../test-data/john-smith-tagged-by-lingpipe-0-v0_2_0.sc | ./filter  > /tmp/filter.sc
+	./filter -f $(filtername) < $(corpus) > $(output)
 	
 CMakeLists.txt:   $(thrift_generated) 
 
 build/Makefile:	CMakeLists.txt   $(thrift_generated) 
-	cd build && cmake -DFILTERNAME=filtername .. 
+	cd build && cmake .. 
 
 build/filter: filter.cc build/Makefile  $(thrift_generated)
 	rm -f filter

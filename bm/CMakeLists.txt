@@ -9,12 +9,12 @@ add_definitions(-DHAVE_INTTYPES_H)
 set(CMAKE_CXX_FLAGS "-std=c++0x")
 
 ###  BOOST
-find_package( Boost REQUIRED COMPONENTS filesystem program_options system regex)
+find_package (Boost REQUIRED COMPONENTS filesystem program_options system regex)
 include_directories(${Boost_INCLUDE_DIR})
 
 ###  THIFT
-find_library( THRIFT_LIB thrift )
-find_path(
+find_library (THRIFT_LIB thrift)
+find_path (
 	THRIFT_INCLUDE_DIR protocol/TBinaryProtocol.h
 	/usr/include/thrift
 	/opt/local/include
@@ -33,7 +33,7 @@ link_directories	(${SC})
 
 ###  THRIFT STREAMCORPUS-FILTER
 include_directories	(build)
-add_library(
+add_library (
 	filternames
 	filternames_constants.cpp 
 	filternames_constants.h

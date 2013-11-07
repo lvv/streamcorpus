@@ -8,7 +8,7 @@ thrift_generated= \
 run:	filter
 	cat ../test-data/john-smith-tagged-by-lingpipe-0-v0_2_0.sc | ./filter  > /tmp/filter.sc
 	
-build/Makefile:	CMakeLists.txt
+build/Makefile:	CMakeLists.txt   $(thrift_generated) 
 	mkdir -p build && cd build && cmake .. 
 
 build/filter: filter.cc build/Makefile  $(thrift_generated)

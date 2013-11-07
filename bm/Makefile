@@ -1,6 +1,11 @@
+###########################################  CONFIG
 filtername="test-name-strings.scf"
 corpus=../test-data/john-smith-tagged-by-lingpipe-0-v0_2_0.sc
 output=/tmp/filtered.sc
+streamcorpus_src=/tr/sc-lvv-v0.3.0-dev/cpp
+
+
+####################################################
 
 thrift_generated= \
 	build/filternames_constants.cpp  \
@@ -8,7 +13,6 @@ thrift_generated= \
 	build/filternames_types.cpp  \
 	build/filternames_types.h 
 
-##########################################################
 
 run:	filter
 	./filter -f $(filtername) < $(corpus) > $(output)
@@ -16,7 +20,7 @@ run:	filter
 CMakeLists.txt:   $(thrift_generated) 
 
 build/Makefile:	CMakeLists.txt   $(thrift_generated) 
-	cd build && cmake .. 
+	cd build && cmake -DSC=$(streamcorpus_src) .. 
 
 build/filter: filter.cc build/Makefile  $(thrift_generated)
 	rm -f filter

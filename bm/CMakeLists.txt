@@ -27,7 +27,7 @@ include_directories(${THRIFT_INCLUDE_DIR})
 
 
 ###  THRIFT STREAMCORPUS
-set			(SC  /tr/sc-lvv-v0.3.0-dev/cpp)
+# SC - defined in Makefile
 include_directories	(${SC})
 link_directories	(${SC})
 

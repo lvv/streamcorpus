@@ -5,22 +5,22 @@ thrift_generated= \
 	build/filternames_types.h 
 ##########################################################
 
-run:	t
-	cat ../test-data/john-smith-tagged-by-lingpipe-0-v0_2_0.sc | ./t  > /tmp/t.sc
+run:	filter
+	cat ../test-data/john-smith-tagged-by-lingpipe-0-v0_2_0.sc | ./filter  > /tmp/filter.sc
 	
 build/Makefile:	CMakeLists.txt
 	mkdir -p build && cd build && cmake .. 
 
-build/t: t.cc build/Makefile  $(thrift_generated)
-	rm -f t
-	cd build && make t
+build/filter: filter.cc build/Makefile  $(thrift_generated)
+	rm -f filter
+	cd build && make filter
 
-t:	build/t
-	ln -s build/t t
+filter:	build/filter
+	ln -s build/filter filter
 
 $(thrift_generated): filternames.thrift
 	thrift  --out build --gen cpp  filternames.thrift
 
 clean:
-	rm -f t
-	cd build && make clean
+	rm -rf build/
+	rm -f filter

@@ -42,5 +42,5 @@ add_library(
 )
 
 ###  TARGET
-add_executable(t t.cc)
-target_link_libraries(t  ${Boost_LIBRARIES} ${THRIFT_LIB} streamcorpus filternames)
+add_executable(filter filter.cc)
+target_link_libraries(filter  ${Boost_LIBRARIES} ${THRIFT_LIB} streamcorpus filternames)

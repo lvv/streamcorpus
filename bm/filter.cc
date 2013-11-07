@@ -56,10 +56,11 @@ int main(int argc, char **argv) {
 	
 	// Supported options.
 	po::options_description desc("Allowed options");
+
 	desc.add_options()
-	("help,h", "help message")
-	("text_source,t", po::value<string>(&text_source), "text source in stream item")
-	("negate,n", po::value<bool>(&negate)->implicit_value(true), "negate sense of match")
+		("help,h", "help message")
+		("text_source,t", po::value<string>(&text_source), "text source in stream item")
+		("negate,n", po::value<bool>(&negate)->implicit_value(true), "negate sense of match")
 	;
 	
 	// Parse command line options
@@ -68,8 +69,8 @@ int main(int argc, char **argv) {
 	po::notify(vm);
 	
 	if (vm.count("help")) {
-	    cout << desc << "\n";
-	    return 1;
+		cout << desc << "\n";
+		return 1;
 	}
 	
 	// Create annotator object
@@ -143,25 +144,25 @@ int main(int argc, char **argv) {
 	    		string actual_text_source = text_source;
 	    		clog << "Reading stream item content from : " << text_source << endl;
 	    		if (text_source == "clean_visible") {
-	    		    content = stream_item.body.clean_visible;
+	    			content = stream_item.body.clean_visible;
 	    		} else if (text_source == "clean_html") {
-	    		    content = stream_item.body.clean_html;
+	    			content = stream_item.body.clean_html;
 	    		} else if (text_source == "raw") {
-	    		    content = stream_item.body.raw;
+	    			content = stream_item.body.raw;
 	    		} else {
-	    		    cerr << "Bad text_source :" << text_source <<endl;
-	    		    exit(-1);
+	    			cerr << "Bad text_source :" << text_source <<endl;
+	    			exit(-1);
 	    		}
 	    		
 	    		if (content.size() <= 0) {
-	    		    // Fall back to raw if desired text_source has no content.
-	    		    content = stream_item.body.raw;
-	    		    actual_text_source = "raw";
-	    		    if (content.size() <= 0) {
-	    		        // If all applicable text sources are empty, we have a problem and exit with an error
-	    		        cerr << cnt << " Error, doc id: " << stream_item.doc_id << " was empty." << endl;
-	    		        exit(-1);
-	    		    }
+	    			// Fall back to raw if desired text_source has no content.
+	    			content = stream_item.body.raw;
+	    			actual_text_source = "raw";
+	    			if (content.size() <= 0) {
+	    				// If all applicable text sources are empty, we have a problem and exit with an error
+	    				cerr << cnt << " Error, doc id: " << stream_item.doc_id << " was empty." << endl;
+	    				exit(-1);
+	    			}
 	    		}
             		
 	    		
@@ -173,49 +174,55 @@ int main(int argc, char **argv) {
             		
 	    		for(const auto& pr : filter_names.name_to_target_ids) {
 	    			const auto& name = pr.first;
-	    			//clog << name << "\n";
-            		        auto pos = std::search(content.begin(), content.end(),  name.begin(), name.end());
-	    			if (pos == content.end()) continue;
-            		
-	    			// found
-	    			clog << cnt << "  doc id: " << stream_item.doc_id;
-	    			clog << "\t" << name << "  (" << pos-content.begin() << ")\n";
-            		
-	    		
-	    			// mapping between canonical form of target and text actually found in document
-	    		
-	    			// For each of the current matches, add a label to the 
-	    			// list of labels.  A label records the character 
-	    			// positions of the match.
-	    			matches++;
-	    			
-	    			// Add the target identified to the label.  Note this 
-	    			// should be identical to what is in the rating 
-	    			// data we add later.
-	    			Target target;
-	    			target.target_id = "1";
-	    		
-	    			Label label;
-	    			label.target = target;
-	    		
-	    			// Add the actual offsets 
-	    			Offset offset;
-	    			offset.type = OffsetType::CHARS;
-	    			
-	    			offset.first = pos - content.begin();
-	    			offset.length = name.size();
-	    			offset.content_form = name;
-	    		
-	    			label.offsets[OffsetType::CHARS] = offset;
-	    			label.__isset.offsets = true;
-	    		
-	    			// Add new label to the list of labels.
-	    			stream_item.body.labels[annotatorID].push_back(label);
-	    		
-	    			// Map of actual text mapped 
-	    			target_text_map[target.target_id].insert(name);
-	    		
-	    		} // for all names
+				auto pos = content.begin();
+
+				while(
+					(pos = std::search(pos, content.end(),  name.begin(), name.end()))
+					!= content.end()
+				) {
+				
+					// found
+					clog << cnt << "  doc id: " << stream_item.doc_id;
+					clog << "\t" << name << "  (" << pos-content.begin() << ")\n";
+				
+				
+					// mapping between canonical form of target and text actually found in document
+				
+					// For each of the current matches, add a label to the 
+					// list of labels.  A label records the character 
+					// positions of the match.
+					matches++;
+					
+					// Add the target identified to the label.  Note this 
+					// should be identical to what is in the rating 
+					// data we add later.
+					Target target;
+					target.target_id = "1";
+				
+					Label label;
+					label.target = target;
+				
+					// Add the actual offsets 
+					Offset offset;
+					offset.type = OffsetType::CHARS;
+					
+					offset.first = pos - content.begin();
+					offset.length = name.size();
+					offset.content_form = name;
+				
+					label.offsets[OffsetType::CHARS] = offset;
+					label.__isset.offsets = true;
+				
+					// Add new label to the list of labels.
+					stream_item.body.labels[annotatorID].push_back(label);
+				
+					// Map of actual text mapped 
+					target_text_map[target.target_id].insert(name);
+
+					// advance pos to begining of unsearched content
+					pos += name.size();
+				}
+	    		}
 	    		
 	    		// Add the rating object for each target that matched in a document
 	    		for ( auto match=target_text_map.begin(); match!=target_text_map.end(); ++match) {

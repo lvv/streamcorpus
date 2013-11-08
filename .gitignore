@@ -47,7 +47,7 @@ cpp/Makefile
 examples/cpp/Makefile
 
 # benchmark
-bm/t
+bm/filter
 bm/build
 
 

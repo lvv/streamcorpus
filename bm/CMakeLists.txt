@@ -22,7 +22,7 @@ find_path (
 	/usr/include
 	/usr/local/include/thrift
 )
-message(STATUS "Include file detected: [${THRIFT_INCLUDE_DIR}].")
+#message(STATUS "Include file detected: [${THRIFT_INCLUDE_DIR}].")
 include_directories(${THRIFT_INCLUDE_DIR})
 
 
@@ -42,5 +42,5 @@ add_library (
 )
 
 ###  TARGET
-add_executable(filter filter.cc)
+add_executable(filter filter.cc multisearch_naive.cc multisearch.h)
 target_link_libraries(filter  ${Boost_LIBRARIES} ${THRIFT_LIB} streamcorpus filternames)

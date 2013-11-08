@@ -17,23 +17,24 @@ thrift_generated= \
 run:	filter
 	./filter -f $(filtername) < $(corpus) > $(output)
 	
-CMakeLists.txt:   $(thrift_generated) 
+CMakeLists.txt:   $(thrift_generated)
 
-build/Makefile:	CMakeLists.txt   $(thrift_generated) 
-	cd build && cmake -DSC=$(streamcorpus_src) .. 
+build/Makefile:	Makefile CMakeLists.txt   $(thrift_generated) 
+	cd build && cmake -DSC=$(streamcorpus_src)  -DCMAKE_BUILD_TYPE=Debug .. 
 
-build/filter: filter.cc build/Makefile  $(thrift_generated)
+build/filter: filter.cc build/Makefile  $(thrift_generated)   Makefile
 	rm -f filter
 	cd build && make filter
 
 filter:	build/filter
 	ln -s build/filter filter
 
-$(thrift_generated): filternames.thrift  build
+$(thrift_generated): filternames.thrift
+	mkdir -p build 
 	thrift  --out build --gen cpp  filternames.thrift
 
-build:
-	mkdir -p build 
+#build:
+#	mkdir -p build 
 
 clean:
 	rm -rf build/

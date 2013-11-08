@@ -46,6 +46,25 @@ using namespace apache::thrift::transport;
 namespace po = boost::program_options;
 
 
+typedef  string::const_iterator		pos_t;
+typedef  const string			name_t;
+typedef	 vector<name_t*>		names_t;
+
+pos_t  multisearch(pos_t b,  pos_t e,  const names_t& names,  name_t*&  matched_name) {
+	for (auto pos = b;  pos < e;  ++pos)  {
+		for(auto name : names)  {
+			if ((name->end() - name->begin()  <= e-pos)  &&  std::equal(name->begin(), name->end(), pos)) {
+				matched_name = name;
+				return pos;
+			}
+		}
+	}
+	matched_name = nullptr;
+	return e;
+};
+
+
+
 int main(int argc, char **argv) {
 	
 	clog << "Starting program" <<endl;
@@ -135,6 +154,7 @@ int main(int argc, char **argv) {
 	int cnt=0;
 	int matches=0;
 	int written=0;
+	clog << "Reading stream item content from : " << text_source << endl;
 	
 	while (true) {
 		try {
@@ -143,7 +163,6 @@ int main(int argc, char **argv) {
 	    		
 	    		string content;
 	    		string actual_text_source = text_source;
-	    		clog << "Reading stream item content from : " << text_source << endl;
 	    		if (text_source == "clean_visible") {
 	    			content = stream_item.body.clean_visible;
 	    		} else if (text_source == "clean_html") {
@@ -161,94 +180,95 @@ int main(int argc, char **argv) {
 	    			actual_text_source = "raw";
 	    			if (content.size() <= 0) {
 	    				// If all applicable text sources are empty, we have a problem and exit with an error
-	    				cerr << cnt << " Error, doc id: " << stream_item.doc_id << " was empty." << endl;
+	    				cerr << cnt << " Error, doc id:" << stream_item.doc_id << " was empty." << endl;
 	    				exit(-1);
 	    			}
 	    		}
             		
 	    		
 	    		
-	    		// NAIVE SEARCH ########################################################################
             		
 	    		filter_names.name_to_target_ids["John Smith"] = vector<string>();
 	    		unordered_map<string, set<string> > target_text_map;
-            		
-	    		for(const auto& pr : filter_names.name_to_target_ids) {
-	    			const auto& name = pr.first;
-				auto pos = content.begin();
 
-				while(
-					(pos = std::search(pos, content.end(),  name.begin(), name.end()))
-					!= content.end()
-				) {
-				
-					// found
-					clog << cnt << "  doc id: " << stream_item.doc_id;
-					clog << "\t" << name << "  (" << pos-content.begin() << ")\n";
-				
-				
-					// mapping between canonical form of target and text actually found in document
-				
-					// For each of the current matches, add a label to the 
-					// list of labels.  A label records the character 
-					// positions of the match.
-					matches++;
-					
-					// Add the target identified to the label.  Note this 
-					// should be identical to what is in the rating 
-					// data we add later.
-					Target target;
-					target.target_id = "1";
-				
-					Label label;
-					label.target = target;
-				
-					// Add the actual offsets 
-					Offset offset;
-					offset.type = OffsetType::CHARS;
-					
-					offset.first = pos - content.begin();
-					offset.length = name.size();
-					offset.content_form = name;
-				
-					label.offsets[OffsetType::CHARS] = offset;
-					label.__isset.offsets = true;
-				
-					// Add new label to the list of labels.
-					stream_item.body.labels[annotatorID].push_back(label);
-				
-					// Map of actual text mapped 
-					target_text_map[target.target_id].insert(name);
+			names_t  names;
+            	      
+	    		for(const auto& pr : filter_names.name_to_target_ids)
+	    			names.push_back(&(pr.first));
 
-					// advance pos to begining of unsearched content
-					pos += name.size();
-				}
-	    		}
+	    		// SEARCH CYCLE ########################################################################
+
+			name_t *matched_name = nullptr;
+			pos_t   pos = content.begin();
+
+			while ((pos = multisearch(pos, content.end(), names, matched_name)) != content.end()) {
+			
+				// found
+				clog << cnt << " \tdoc-id:" << stream_item.doc_id;
+				clog << "   pos:" << pos-content.begin() << " \t" << *matched_name<< "\n";
+			
+			
+				// mapping between canonical form of target and text actually found in document
+			
+				// For each of the current matches, add a label to the 
+				// list of labels.  A label records the character 
+				// positions of the match.
+				matches++;
+				
+				// Add the target identified to the label.  Note this 
+				// should be identical to what is in the rating 
+				// data we add later.
+				Target target;
+				target.target_id = "1";
+			
+				Label label;
+				label.target = target;
+			
+				// Add the actual offsets 
+				Offset offset;
+				offset.type = OffsetType::CHARS;
+				
+				offset.first = pos - content.begin();
+				offset.length = matched_name->size();
+				offset.content_form = *matched_name;
+			
+				label.offsets[OffsetType::CHARS] = offset;
+				label.__isset.offsets = true;
+			
+				// Add new label to the list of labels.
+				stream_item.body.labels[annotatorID].push_back(label);
+			
+				// Map of actual text mapped 
+				target_text_map[target.target_id].insert(*matched_name);
+
+				// advance pos to begining of unsearched content
+				pos += matched_name->size();
+			}
 	    		
 	    		// Add the rating object for each target that matched in a document
 	    		for ( auto match=target_text_map.begin(); match!=target_text_map.end(); ++match) {
-	    		    // Construct new rating
-	    		    Rating rating;
-	    		
-	    		    // Flag that it contained a mention
-	    		    rating.__set_contains_mention(true);
-	    		
-	    		    // Construct a target object for each match
-	    		    Target target;
-	    		    target.target_id = match->first;
-	    		    rating.target = target;
-	    		
-	    		    // Copy all the strings that matched into the mentions field
-	    		    copy(match->second.begin(), match->second.end(), back_inserter(rating.mentions));
-	    		
-	    		    // Subtle but vital, we need to do the following for proper serialization.
-	    		    rating.__isset.mentions = true;
-	    		
-	    		    // Add the annotator from above.
-	    		    rating.annotator = annotator;
-	    		
-	    		    // Push the new rating onto the rating list for this annotator.
-	    		    stream_item.ratings[annotatorID].push_back(rating);
+	    			// Construct new rating
+	    			Rating rating;
+	    			
+	    			// Flag that it contained a mention
+	    			rating.__set_contains_mention(true);
+	    			
+	    			// Construct a target object for each match
+	    			Target target;
+	    			target.target_id = match->first;
+	    			rating.target = target;
+	    			
+	    			// Copy all the strings that matched into the mentions field
+	    			copy(match->second.begin(), match->second.end(), back_inserter(rating.mentions));
+	    			
+	    			// Subtle but vital, we need to do the following for proper serialization.
+	    			rating.__isset.mentions = true;
+	    			
+	    			// Add the annotator from above.
+	    			rating.annotator = annotator;
+	    			
+	    			// Push the new rating onto the rating list for this annotator.
+	    			stream_item.ratings[annotatorID].push_back(rating);
 	    		}
 	    		
 	    		if (not negate) { 

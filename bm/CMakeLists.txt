@@ -1,6 +1,6 @@
 #
 SET (CMAKE_BUILD_TYPE Debug)
-SET (CMAKE_VERBOSE_MAKEFILE on)
+#SET (CMAKE_VERBOSE_MAKEFILE on)
 
 cmake_minimum_required(VERSION 2.6.4)
 add_definitions(-DHAVE_NETINET_IN_H)

@@ -15,6 +15,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 #include <fstream>
+#include <chrono>
 
 // THRIFT -- STREAMCORUPS
 #include "streamcorpus_types.h"
@@ -51,6 +52,8 @@ namespace po = boost::program_options;
 int main(int argc, char **argv) {
 	
 	clog << "Starting program" <<endl;
+	auto start = chrono::high_resolution_clock ::now();
+
 	
 	string text_source("clean_visible");
 	string filtername_path;
@@ -283,5 +286,8 @@ int main(int argc, char **argv) {
 			break;
 		}
 	}
+
+	auto diff = chrono::high_resolution_clock ::now() - start;
+	clog << "run time: " << chrono::duration_cast<chrono::seconds>(diff).count() << " sec" << endl;
 }
 
